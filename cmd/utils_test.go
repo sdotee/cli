@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -66,6 +67,24 @@ func TestReadContent_EmptyFile(t *testing.T) {
 	}
 	if err.Error() != "file is empty" {
 		t.Errorf("expected 'file is empty' error, got %v", err)
+	}
+}
+
+func TestReadContent_NonTextFile(t *testing.T) {
+	tmpDir := t.TempDir()
+	tmpFile := filepath.Join(tmpDir, "binary.bin")
+	data := []byte{0x00, 0xFF, 0x10, 0x00, 0x01}
+	if err := os.WriteFile(tmpFile, data, 0644); err != nil {
+		t.Fatalf("failed to create binary file: %v", err)
+	}
+
+	cmd := &cobra.Command{}
+	_, err := readContent(tmpFile, cmd)
+	if err == nil {
+		t.Fatal("expected error for binary file, got nil")
+	}
+	if !strings.Contains(err.Error(), "non-text content") {
+		t.Fatalf("expected non-text content error, got %v", err)
 	}
 }
 

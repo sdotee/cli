@@ -17,10 +17,12 @@ package cmd
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"strings"
 
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/spf13/cobra"
 )
 
@@ -36,27 +38,38 @@ func printJSON(w io.Writer, v any) error {
 // If filePath is "-", it reads from stdin.
 // It returns an error if the file or stdin is empty.
 func readContent(filePath string, cmd *cobra.Command) (string, error) {
+	var (
+		b   []byte
+		err error
+	)
+
 	if filePath != "" && filePath != "-" {
-		b, err := os.ReadFile(filePath)
+		b, err = os.ReadFile(filePath)
 		if err != nil {
 			return "", err
 		}
 		if len(b) == 0 {
 			return "", errors.New("file is empty")
 		}
-		return string(b), nil
-	}
+	} else {
+		// Only check if stdin is a terminal if we are not explicitly asked to read from stdin
+		if filePath != "-" {
+			stat, _ := os.Stdin.Stat()
+			if (stat.Mode() & os.ModeCharDevice) != 0 {
+				return "", errors.New("no input: provide --file <path> or pipe content via stdin")
+			}
+		}
 
-	// Only check if stdin is a terminal if we are not explicitly asked to read from stdin
-	if filePath != "-" {
-		stat, _ := os.Stdin.Stat()
-		if (stat.Mode() & os.ModeCharDevice) != 0 {
-			return "", errors.New("no input: provide --file <path> or pipe content via stdin")
+		b, err = io.ReadAll(cmd.InOrStdin())
+		if err != nil {
+			return "", err
+		}
+		if len(b) == 0 {
+			return "", errors.New("content is empty")
 		}
 	}
 
-	b, err := io.ReadAll(cmd.InOrStdin())
-	if err != nil {
+	if err := ensureTextContent(b); err != nil {
 		return "", err
 	}
 
@@ -65,4 +78,38 @@ func readContent(filePath string, cmd *cobra.Command) (string, error) {
 		return "", errors.New("content is empty")
 	}
 	return content, nil
+}
+
+// ensureTextContent rejects non-text input based on MIME sniffing to avoid
+// uploading binary data to text endpoints.
+func ensureTextContent(b []byte) error {
+	mt := mimetype.Detect(b)
+	mimeType := mt.String()
+	if idx := strings.Index(mimeType, ";"); idx != -1 {
+		mimeType = strings.TrimSpace(mimeType[:idx])
+	}
+
+	if isAllowedTextMIME(mimeType) {
+		return nil
+	}
+
+	return fmt.Errorf("non-text content detected (%s); only text input is allowed", mimeType)
+}
+
+func isAllowedTextMIME(mimeType string) bool {
+	if strings.HasPrefix(mimeType, "text/") {
+		return true
+	}
+
+	switch mimeType {
+	case "application/json",
+		"application/xml",
+		"application/javascript",
+		"application/x-sh",
+		"application/x-httpd-php",
+		"application/x-yaml":
+		return true
+	default:
+		return false
+	}
 }
