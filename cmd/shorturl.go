@@ -23,6 +23,7 @@ import (
 )
 
 var (
+	// shortCreateOpts holds options for creating a short URL
 	shortCreateOpts struct {
 		domain                string
 		slug                  string
@@ -33,12 +34,14 @@ var (
 		expirationRedirectURL string
 	}
 
+	// shortUpdateOpts holds options for updating a short URL
 	shortUpdateOpts struct {
 		domain    string
 		targetURL string
 		title     string
 	}
 
+	// shortDeleteOpts holds options for deleting a short URL
 	shortDeleteOpts struct {
 		domain string
 	}
@@ -85,7 +88,7 @@ var shorturlCreateCmd = &cobra.Command{
 			ExpirationRedirectURL: shortCreateOpts.expirationRedirectURL,
 		}
 
-		resp, err := client.CreateShortURL(req)
+		resp, err := apiClient.CreateShortURL(req)
 		if err != nil {
 			return err
 		}
@@ -105,7 +108,7 @@ var shorturlUpdateCmd = &cobra.Command{
 		if strings.TrimSpace(shortUpdateOpts.targetURL) == "" {
 			return fmt.Errorf("--target-url is required")
 		}
-		resp, err := client.UpdateShortURL(seesdk.UpdateShortURLRequest{
+		resp, err := apiClient.UpdateShortURL(seesdk.UpdateShortURLRequest{
 			Domain:    shortUpdateOpts.domain,
 			Slug:      args[0],
 			TargetURL: shortUpdateOpts.targetURL,
@@ -129,7 +132,7 @@ var shorturlDeleteCmd = &cobra.Command{
 	Short: "Delete a short URL",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := client.DeleteShortURL(seesdk.DeleteURLRequest{
+		resp, err := apiClient.DeleteShortURL(seesdk.DeleteURLRequest{
 			Domain: shortDeleteOpts.domain,
 			Slug:   args[0],
 		})

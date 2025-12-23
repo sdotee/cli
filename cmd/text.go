@@ -22,6 +22,7 @@ import (
 )
 
 var (
+	// textCreateOpts holds options for creating a text entry
 	textCreateOpts struct {
 		domain   string
 		slug     string
@@ -33,12 +34,14 @@ var (
 		file     string
 	}
 
+	// textUpdateOpts holds options for updating a text entry
 	textUpdateOpts struct {
 		domain string
 		title  string
 		file   string
 	}
 
+	// textDeleteOpts holds options for deleting a text entry
 	textDeleteOpts struct {
 		domain string
 	}
@@ -79,7 +82,7 @@ var textCreateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		resp, err := client.CreateText(seesdk.CreateTextRequest{
+		resp, err := apiClient.CreateText(seesdk.CreateTextRequest{
 			Content:    content,
 			Domain:     textCreateOpts.domain,
 			CustomSlug: textCreateOpts.slug,
@@ -109,7 +112,7 @@ var textUpdateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		resp, err := client.UpdateText(seesdk.UpdateTextRequest{
+		resp, err := apiClient.UpdateText(seesdk.UpdateTextRequest{
 			Domain:  textUpdateOpts.domain,
 			Slug:    args[0],
 			Content: content,
@@ -133,7 +136,7 @@ var textDeleteCmd = &cobra.Command{
 	Short: "Delete a text entry",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := client.DeleteText(seesdk.DeleteTextRequest{
+		resp, err := apiClient.DeleteText(seesdk.DeleteTextRequest{
 			Domain: textDeleteOpts.domain,
 			Slug:   args[0],
 		})

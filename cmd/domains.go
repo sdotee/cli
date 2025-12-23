@@ -24,7 +24,7 @@ var domainsCmd = &cobra.Command{
 	Use:   "domains",
 	Short: "List available domains",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := client.GetDomains()
+		resp, err := apiClient.GetDomains()
 		if err != nil {
 			return err
 		}

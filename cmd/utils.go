@@ -24,12 +24,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// printJSON encodes the given value as JSON and writes it to the writer.
+// It uses indentation for better readability.
 func printJSON(w io.Writer, v any) error {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 	return enc.Encode(v)
 }
 
+// readContent reads content from the specified file path.
+// If filePath is "-", it reads from stdin.
+// It returns an error if the file or stdin is empty.
 func readContent(filePath string, cmd *cobra.Command) (string, error) {
 	if filePath != "" && filePath != "-" {
 		b, err := os.ReadFile(filePath)

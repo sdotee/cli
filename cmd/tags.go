@@ -24,7 +24,7 @@ var tagsCmd = &cobra.Command{
 	Use:   "tags",
 	Short: "List available tags",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := client.GetTags()
+		resp, err := apiClient.GetTags()
 		if err != nil {
 			return err
 		}

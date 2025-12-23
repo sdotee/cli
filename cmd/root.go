@@ -26,7 +26,10 @@ import (
 )
 
 var (
-	client   *seesdk.Client
+	// apiClient is the global SDK client instance used by commands
+	apiClient *seesdk.Client
+
+	// rootOpts holds the global command-line options
 	rootOpts struct {
 		baseURL    string
 		apiKey     string
@@ -44,7 +47,7 @@ var rootCmd = &cobra.Command{
 		if rootOpts.apiKey == "" {
 			return errors.New("missing API key: use --api-key or set SEE_API_KEY")
 		}
-		client = seesdk.NewClient(seesdk.Config{
+		apiClient = seesdk.NewClient(seesdk.Config{
 			BaseURL: rootOpts.baseURL,
 			APIKey:  rootOpts.apiKey,
 			Timeout: rootOpts.timeout,
@@ -53,6 +56,8 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+// Execute adds all child commands to the root command and sets flags appropriately.
+// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
