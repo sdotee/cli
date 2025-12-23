@@ -47,10 +47,12 @@ func readContent(filePath string, cmd *cobra.Command) (string, error) {
 		return string(b), nil
 	}
 
-	// Check if stdin is a terminal
-	stat, _ := os.Stdin.Stat()
-	if (stat.Mode() & os.ModeCharDevice) != 0 {
-		return "", errors.New("no input: provide --file <path> or pipe content via stdin")
+	// Only check if stdin is a terminal if we are not explicitly asked to read from stdin
+	if filePath != "-" {
+		stat, _ := os.Stdin.Stat()
+		if (stat.Mode() & os.ModeCharDevice) != 0 {
+			return "", errors.New("no input: provide --file <path> or pipe content via stdin")
+		}
 	}
 
 	b, err := io.ReadAll(cmd.InOrStdin())
