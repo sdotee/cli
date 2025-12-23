@@ -1,0 +1,41 @@
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+
+# Folders
+_obj
+_test
+.vagrant
+releases
+tmp
+/.idea/
+/.vscode/
+vendor/
+/dist
+# only for test, so ignore
+/simplyddns.yml
+
+# Architecture specific extensions/prefixes
+trace.out
+*.out
+.DS_Store
+_testmain.go
+
+*.exe
+*.test
+*.prof
+profile.cov
+coverage.html
+
+# Emacs backup files
+*~
+.*~
+/.vscode/*.log
+/.task/*
+
+/simplyddns
+/*.txt
+/.envrc
+/.versions
+/see
