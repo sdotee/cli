@@ -36,6 +36,11 @@ var (
 		timeout    time.Duration
 		jsonOutput bool
 	}
+
+	// BuildVersion is the version of the binary, injected at build time
+	BuildVersion = "dev"
+	// BuildTime is the time the binary was built, injected at build time
+	BuildTime = "unknown"
 )
 
 var rootCmd = &cobra.Command{
@@ -58,7 +63,14 @@ var rootCmd = &cobra.Command{
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
+func Execute(v, t string) {
+	BuildVersion = v
+	BuildTime = t
+
+	// Set version template to show custom version info
+	rootCmd.Version = v
+	rootCmd.SetVersionTemplate(fmt.Sprintf("see version %s (%s)\n", v, t))
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -89,4 +101,13 @@ func init() {
 	rootCmd.AddCommand(shorturlCmd)
 	rootCmd.AddCommand(textCmd)
 	rootCmd.AddCommand(fileCmd)
+	rootCmd.AddCommand(versionCmd)
+}
+
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print the version number of see-cli",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("see-cli version %s (%s)\n", BuildVersion, BuildTime)
+	},
 }

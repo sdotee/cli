@@ -16,6 +16,11 @@ package main
 
 import "s.ee/cli/cmd"
 
+var (
+	BuildVersion = "dev"
+	BuildTime    = "unknown"
+)
+
 func main() {
-	cmd.Execute()
+	cmd.Execute(BuildVersion, BuildTime)
 }

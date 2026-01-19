@@ -1,4 +1,4 @@
-.PHONY: build clean test darwin_universal
+.PHONY: build clean test darwin_universal release
 
 VERSION=1.0.0
 BIN=see
@@ -30,5 +30,10 @@ test:
 clean:
 	@$(GO) clean ./...
 	@rm -f $(BIN)
+	@rm -rf dist/
+
+# run goreleaser to release snapshot
+release:
+	@goreleaser release --snapshot --clean
 
 all: clean test build
