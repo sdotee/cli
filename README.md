@@ -78,6 +78,36 @@ see text update <slug> [flags]
 see text delete <slug>
 ```
 
+### File Upload
+
+Upload and manage files.
+
+**Domains**
+
+List available domains for file uploads:
+
+```bash
+see file domains
+```
+
+**Upload**
+
+```bash
+see file upload [file] [flags]
+# OR
+cat image.png | see file upload --name image.png
+
+# Flags:
+# --file, -f: Path to file (optional if passed as argument)
+# --name, -n: Filename (required if using stdin)
+```
+
+**Delete**
+
+```bash
+see file delete <delete_key>
+```
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
