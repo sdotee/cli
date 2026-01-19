@@ -93,7 +93,7 @@ see file domains
 **Upload**
 
 ```bash
-see file upload [file] [flags]
+see file upload [files...] [flags]
 # OR
 cat image.png | see file upload --name image.png
 
@@ -105,7 +105,7 @@ cat image.png | see file upload --name image.png
 **Delete**
 
 ```bash
-see file delete <delete_key>
+see file delete <delete_keys...>
 ```
 
 ## License
