@@ -66,7 +66,7 @@ func TestFileUploadCmd_Flags(t *testing.T) {
 }
 
 func TestFileDeleteCmd_Args(t *testing.T) {
-	// Test that delete command requires exactly 1 argument
+	// Test that delete command requires at least 1 argument
 	err := fileDeleteCmd.Args(fileDeleteCmd, []string{})
 	if err == nil {
 		t.Error("expected error when no args provided to delete command")
@@ -75,5 +75,10 @@ func TestFileDeleteCmd_Args(t *testing.T) {
 	err = fileDeleteCmd.Args(fileDeleteCmd, []string{"key123"})
 	if err != nil {
 		t.Errorf("unexpected error with 1 arg: %v", err)
+	}
+
+	err = fileDeleteCmd.Args(fileDeleteCmd, []string{"key1", "key2"})
+	if err != nil {
+		t.Errorf("unexpected error with 2 args: %v", err)
 	}
 }

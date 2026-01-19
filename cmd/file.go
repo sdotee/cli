@@ -36,77 +36,95 @@ var fileCmd = &cobra.Command{
 }
 
 var fileUploadCmd = &cobra.Command{
-	Use:   "upload",
-	Short: "Upload a file",
+	Use:   "upload [file...]",
+	Short: "Upload one or more files",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var (
-			filename string
-			reader   io.Reader
-		)
-
-		// Determine file source
-		filePath := fileUploadOpts.file
-		// If argument provided, use it as file path
-		if len(args) > 0 {
-			filePath = args[0]
+		// Collect all files to upload
+		var filesToUpload []string
+		filesToUpload = append(filesToUpload, args...)
+		if fileUploadOpts.file != "" && fileUploadOpts.file != "-" {
+			filesToUpload = append(filesToUpload, fileUploadOpts.file)
 		}
 
-		if filePath == "" || filePath == "-" {
-			// Read from stdin
+		// Case 1: Stdin
+		if len(filesToUpload) == 0 || (len(filesToUpload) == 1 && filesToUpload[0] == "-") {
 			if fileUploadOpts.name == "" {
 				return fmt.Errorf("filename must be provided via --name when reading from stdin")
 			}
-			filename = fileUploadOpts.name
-			reader = cmd.InOrStdin()
-		} else {
-			// Read from file
+			return uploadReader(cmd, fileUploadOpts.name, cmd.InOrStdin())
+		}
+
+		// Case 2: Multiple files
+		if len(filesToUpload) > 1 && fileUploadOpts.name != "" {
+			return fmt.Errorf("cannot use --name with multiple files")
+		}
+
+		for _, filePath := range filesToUpload {
+			if filePath == "-" {
+				continue // Skip explicit stdin marker in multi-file mode or handle it? simplified to skip/error
+			}
+
 			f, err := os.Open(filePath)
 			if err != nil {
-				return fmt.Errorf("failed to open file: %w", err)
+				return fmt.Errorf("failed to open file %q: %w", filePath, err)
 			}
-			defer f.Close()
-			reader = f
-
-			if fileUploadOpts.name != "" {
-				filename = fileUploadOpts.name
-			} else {
-				filename = filepath.Base(filePath)
+			// We defer close inside a loop, which is not ideal for many files, but fine for CLI typical usage.
+			// Better to wrap in func.
+			err = func() error {
+				defer f.Close()
+				filename := filepath.Base(filePath)
+				// If strictly single file and name is provided (already checked above for >1), use it.
+				// But we checked >1. If len==1, we can use name.
+				if len(filesToUpload) == 1 && fileUploadOpts.name != "" {
+					filename = fileUploadOpts.name
+				}
+				return uploadReader(cmd, filename, f)
+			}()
+			if err != nil {
+				return err
 			}
 		}
-
-		resp, err := apiClient.UploadFile(filename, reader)
-		if err != nil {
-			return err
-		}
-
-		if rootOpts.jsonOutput {
-			return printJSON(cmd.OutOrStdout(), resp.Data)
-		}
-
-		fmt.Fprintf(cmd.OutOrStdout(), "File uploaded successfully:\n")
-		fmt.Fprintf(cmd.OutOrStdout(), "URL: %s\n", resp.Data.URL)
-		fmt.Fprintf(cmd.OutOrStdout(), "Delete Key: %s\n", resp.Data.Delete)
-		fmt.Fprintf(cmd.OutOrStdout(), "Page: %s\n", resp.Data.Page)
 		return nil
 	},
 }
 
+func uploadReader(cmd *cobra.Command, filename string, reader io.Reader) error {
+	resp, err := apiClient.UploadFile(filename, reader)
+	if err != nil {
+		return err
+	}
+
+	if rootOpts.jsonOutput {
+		// If multiple files are uploaded in JSON mode, this will produce multiple JSON objects
+		// concatenated. This is "JSON Lines" format usually.
+		return printJSON(cmd.OutOrStdout(), resp.Data)
+	}
+
+	fmt.Fprintf(cmd.OutOrStdout(), "File uploaded successfully: %s\n", filename)
+	fmt.Fprintf(cmd.OutOrStdout(), "URL: %s\n", resp.Data.URL)
+	fmt.Fprintf(cmd.OutOrStdout(), "Delete Key: %s\n", resp.Data.Delete)
+	fmt.Fprintf(cmd.OutOrStdout(), "Page: %s\n", resp.Data.Page)
+	fmt.Fprintln(cmd.OutOrStdout(), "---")
+	return nil
+}
+
 var fileDeleteCmd = &cobra.Command{
-	Use:   "delete <key>",
-	Short: "Delete a file",
-	Args:  cobra.ExactArgs(1),
+	Use:   "delete <key...>",
+	Short: "Delete one or more files",
+	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		deleteKey := args[0]
-		resp, err := apiClient.DeleteFile(deleteKey)
-		if err != nil {
-			return err
-		}
+		for _, deleteKey := range args {
+			resp, err := apiClient.DeleteFile(deleteKey)
+			if err != nil {
+				return fmt.Errorf("failed to delete file with key %q: %w", deleteKey, err)
+			}
 
-		if rootOpts.jsonOutput {
-			return printJSON(cmd.OutOrStdout(), resp)
+			if rootOpts.jsonOutput {
+				printJSON(cmd.OutOrStdout(), resp)
+			} else {
+				fmt.Fprintf(cmd.OutOrStdout(), "File with key arg %q deleted successfully\n", deleteKey)
+			}
 		}
-
-		fmt.Fprintln(cmd.OutOrStdout(), "File deleted successfully")
 		return nil
 	},
 }

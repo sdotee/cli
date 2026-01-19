@@ -88,4 +88,5 @@ func init() {
 	rootCmd.AddCommand(tagsCmd)
 	rootCmd.AddCommand(shorturlCmd)
 	rootCmd.AddCommand(textCmd)
+	rootCmd.AddCommand(fileCmd)
 }
