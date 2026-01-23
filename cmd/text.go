@@ -56,6 +56,7 @@ func init() {
 	textCmd.AddCommand(textCreateCmd)
 	textCmd.AddCommand(textUpdateCmd)
 	textCmd.AddCommand(textDeleteCmd)
+	textCmd.AddCommand(textDomainsCmd)
 
 	textCreateCmd.Flags().StringVar(&textCreateOpts.domain, "domain", "s.ee", "Short domain")
 	textCreateCmd.Flags().StringVar(&textCreateOpts.slug, "slug", "", "Custom slug")
@@ -148,6 +149,25 @@ var textDeleteCmd = &cobra.Command{
 		}
 		if resp.Message != "" {
 			fmt.Fprintln(cmd.OutOrStdout(), resp.Message)
+		}
+		return nil
+	},
+}
+
+var textDomainsCmd = &cobra.Command{
+	Use:   "domains",
+	Short: "List available domains for text",
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		resp, err := apiClient.GetTextDomains()
+		if err != nil {
+			return err
+		}
+		if rootOpts.jsonOutput {
+			return printJSON(cmd.OutOrStdout(), resp.Data.Domains)
+		}
+		for _, d := range resp.Data.Domains {
+			fmt.Fprintln(cmd.OutOrStdout(), d)
 		}
 		return nil
 	},
