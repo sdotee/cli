@@ -34,7 +34,7 @@ archives:
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
     # use zip for windows
-    formats_overrides:
+    format_overrides:
       - goos: windows
         formats:
           - zip
