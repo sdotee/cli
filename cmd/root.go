@@ -49,6 +49,9 @@ var rootCmd = &cobra.Command{
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		if cmd.Name() == "version" {
+			return nil
+		}
 		if rootOpts.apiKey == "" {
 			return errors.New("missing API key: use --api-key or set SEE_API_KEY")
 		}

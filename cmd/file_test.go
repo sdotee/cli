@@ -27,16 +27,18 @@ func TestFileCmd_Structure(t *testing.T) {
 	hasUpload := false
 	hasDelete := false
 	hasDomains := false
+	hasHistory := false
 
 	for _, c := range commands {
-		if c.Use == "upload" {
+		switch c.Name() {
+		case "upload":
 			hasUpload = true
-		}
-		if c.Use == "delete <key>" {
+		case "delete":
 			hasDelete = true
-		}
-		if c.Use == "domains" {
+		case "domains":
 			hasDomains = true
+		case "history":
+			hasHistory = true
 		}
 	}
 
@@ -49,12 +51,16 @@ func TestFileCmd_Structure(t *testing.T) {
 	if !hasDomains {
 		t.Error("file command missing 'domains' subcommand")
 	}
+	if !hasHistory {
+		t.Error("file command missing 'history' subcommand")
+	}
 }
 
 func TestFileUploadCmd_Flags(t *testing.T) {
 	// Reset flags
 	fileUploadOpts.file = ""
 	fileUploadOpts.name = ""
+	fileUploadOpts.isPrivate = 0
 
 	f := fileUploadCmd.Flags()
 	if f.Lookup("file") == nil {
@@ -62,6 +68,18 @@ func TestFileUploadCmd_Flags(t *testing.T) {
 	}
 	if f.Lookup("name") == nil {
 		t.Error("upload command missing 'name' flag")
+	}
+	if f.Lookup("is-private") == nil {
+		t.Error("upload command missing 'is-private' flag")
+	}
+}
+
+func TestFileHistoryCmd_Flags(t *testing.T) {
+	fileHistoryOpts.page = 1
+
+	f := fileHistoryCmd.Flags()
+	if f.Lookup("page") == nil {
+		t.Error("history command missing 'page' flag")
 	}
 }
 

@@ -8,6 +8,16 @@ A command-line client for the [S.EE](https://s.ee) content sharing platform, ena
 go install .
 ```
 
+On Debian/Ubuntu:
+```bash
+dpkg -i see-cli_<version>_<arch>.deb
+```
+
+On RHEL/Fedora:
+```bash
+rpm -i see-cli-<version>-1.<arch>.rpm
+```
+
 ## Configuration
 
 | Flag         | Environment Variable | Description           |
@@ -100,12 +110,30 @@ cat image.png | see file upload --name image.png
 # Flags:
 # --file, -f: Path to file (optional if passed as argument)
 # --name, -n: Filename (required if using stdin)
+# --is-private: Whether this file should be private (0 = public, 1 = private)
+```
+
+**History**
+
+List uploaded file history (30 files per page):
+
+```bash
+see file history [flags]
+
+# Flags:
+# --page, -p: Page number (default 1)
 ```
 
 **Delete**
 
 ```bash
 see file delete <delete_keys...>
+```
+
+### Version
+
+```bash
+see version
 ```
 
 ## License

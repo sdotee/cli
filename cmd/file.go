@@ -20,13 +20,19 @@ import (
 	"os"
 	"path/filepath"
 
+	seesdk "github.com/sdotee/sdk.go"
 	"github.com/spf13/cobra"
 )
 
 var (
 	fileUploadOpts struct {
-		file string
-		name string
+		file      string
+		name      string
+		isPrivate int
+	}
+
+	fileHistoryOpts struct {
+		page int
 	}
 )
 
@@ -89,14 +95,16 @@ var fileUploadCmd = &cobra.Command{
 }
 
 func uploadReader(cmd *cobra.Command, filename string, reader io.Reader) error {
-	resp, err := apiClient.UploadFile(filename, reader)
+	resp, err := apiClient.UploadFile(seesdk.UploadFileRequest{
+		Filename:  filename,
+		File:      reader,
+		IsPrivate: fileUploadOpts.isPrivate != 0,
+	})
 	if err != nil {
 		return err
 	}
 
 	if rootOpts.jsonOutput {
-		// If multiple files are uploaded in JSON mode, this will produce multiple JSON objects
-		// concatenated. This is "JSON Lines" format usually.
 		return printJSON(cmd.OutOrStdout(), resp.Data)
 	}
 
@@ -147,11 +155,41 @@ var fileDomainsCmd = &cobra.Command{
 	},
 }
 
+var fileHistoryCmd = &cobra.Command{
+	Use:   "history",
+	Short: "List uploaded file history",
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		resp, err := apiClient.GetFileHistory(fileHistoryOpts.page)
+		if err != nil {
+			return err
+		}
+		if rootOpts.jsonOutput {
+			return printJSON(cmd.OutOrStdout(), resp.Data)
+		}
+		for _, f := range resp.Data {
+			fmt.Fprintf(cmd.OutOrStdout(), "File: %s\n", f.Filename)
+			fmt.Fprintf(cmd.OutOrStdout(), "URL: %s\n", f.URL)
+			fmt.Fprintf(cmd.OutOrStdout(), "Delete Key: %s\n", f.Delete)
+			fmt.Fprintf(cmd.OutOrStdout(), "Size: %d\n", f.Size)
+			fmt.Fprintf(cmd.OutOrStdout(), "Page: %s\n", f.Page)
+			fmt.Fprintln(cmd.OutOrStdout(), "---")
+		}
+		return nil
+	},
+}
+
 func init() {
 	fileCmd.AddCommand(fileUploadCmd)
 	fileCmd.AddCommand(fileDeleteCmd)
 	fileCmd.AddCommand(fileDomainsCmd)
+	fileCmd.AddCommand(fileHistoryCmd)
 
 	fileUploadCmd.Flags().StringVarP(&fileUploadOpts.file, "file", "f", "", "Path to file to upload (default stdin if not provided or -)")
 	fileUploadCmd.Flags().StringVarP(&fileUploadOpts.name, "name", "n", "", "Filename to use (required for stdin, optional override for file)")
+	fileUploadCmd.Flags().IntVar(&fileUploadOpts.isPrivate, "is-private", 0, "Whether this file should be private (0 = public, 1 = private)")
+	fileUploadCmd.Flags().IntVar(&fileUploadOpts.isPrivate, "private", 0, "Alias for --is-private")
+	fileUploadCmd.Flags().MarkHidden("private")
+
+	fileHistoryCmd.Flags().IntVarP(&fileHistoryOpts.page, "page", "p", 1, "Page number (default 1, 30 files per page)")
 }

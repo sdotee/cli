@@ -37,6 +37,19 @@ archives:
       - goos: windows
         format: zip
 
+nfpms:
+  - package_name: see-cli
+    maintainer: S.EE Development Team <dev@s.ee>
+    description: CLI client for the S.EE content sharing platform
+    homepage: https://s.ee
+    license: MIT
+    formats:
+      - deb
+      - rpm
+    contents:
+      - src: ./see
+        dst: /usr/bin/see
+
 checksum:
   name_template: 'checksums.txt'
 
