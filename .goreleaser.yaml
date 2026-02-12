@@ -23,7 +23,8 @@ builds:
       - -extldflags "-static"
 
 archives:
-  - format: tar.gz
+  - formats:
+      - tar.gz
     # this name template makes the OS and Arch compatible with the results of uname.
     name_template: >-
       {{ .ProjectName }}_
@@ -33,9 +34,10 @@ archives:
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
     # use zip for windows
-    format_overrides:
+    formats_overrides:
       - goos: windows
-        format: zip
+        formats:
+          - zip
 
 nfpms:
   - package_name: see-cli
@@ -43,12 +45,10 @@ nfpms:
     description: CLI client for the S.EE content sharing platform
     homepage: https://s.ee
     license: MIT
+    bindir: /usr/bin
     formats:
       - deb
       - rpm
-    contents:
-      - src: ./see
-        dst: /usr/bin/see
 
 checksum:
   name_template: 'checksums.txt'
