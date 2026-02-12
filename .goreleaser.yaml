@@ -13,6 +13,7 @@ builds:
       - linux
       - windows
       - darwin
+      - freebsd
     goarch:
       - amd64
       - arm64
@@ -47,8 +48,11 @@ nfpms:
     license: MIT
     bindir: /usr/bin
     formats:
+      - apk
       - deb
       - rpm
+      - termux.deb
+      - archlinux
 
 checksum:
   name_template: 'checksums.txt'
