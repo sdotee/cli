@@ -19,6 +19,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	seesdk "github.com/sdotee/sdk.go"
 	"github.com/spf13/cobra"
@@ -179,11 +180,38 @@ var fileHistoryCmd = &cobra.Command{
 	},
 }
 
+var fileDownloadUrlCmd = &cobra.Command{
+	Use:   "download-url <file-id>",
+	Short: "Get a temporary download URL for a private file",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		fileID, err := strconv.ParseInt(args[0], 10, 64)
+		if err != nil {
+			return fmt.Errorf("invalid file ID %q: %w", args[0], err)
+		}
+
+		resp, err := apiClient.GetPrivateFileDownloadURL(fileID)
+		if err != nil {
+			return fmt.Errorf("failed to get download URL for file ID %d: %w", fileID, err)
+		}
+
+		if rootOpts.jsonOutput {
+			return printJSON(cmd.OutOrStdout(), resp.Data)
+		}
+
+		fmt.Fprintf(cmd.OutOrStdout(), "File ID: %d\n", resp.Data.FileID)
+		fmt.Fprintf(cmd.OutOrStdout(), "Download URL: %s\n", resp.Data.URL)
+		fmt.Fprintf(cmd.OutOrStdout(), "Expires At: %d\n", resp.Data.ExpiresAt)
+		return nil
+	},
+}
+
 func init() {
 	fileCmd.AddCommand(fileUploadCmd)
 	fileCmd.AddCommand(fileDeleteCmd)
 	fileCmd.AddCommand(fileDomainsCmd)
 	fileCmd.AddCommand(fileHistoryCmd)
+	fileCmd.AddCommand(fileDownloadUrlCmd)
 
 	fileUploadCmd.Flags().StringVarP(&fileUploadOpts.file, "file", "f", "", "Path to file to upload (default stdin if not provided or -)")
 	fileUploadCmd.Flags().StringVarP(&fileUploadOpts.name, "name", "n", "", "Filename to use (required for stdin, optional override for file)")

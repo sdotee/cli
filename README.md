@@ -124,6 +124,14 @@ see file history [flags]
 # --page, -p: Page number (default 1)
 ```
 
+**Download URL**
+
+Get a temporary download URL for a private file:
+
+```bash
+see file download-url <file-id>
+```
+
 **Delete**
 
 ```bash
