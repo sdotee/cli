@@ -28,6 +28,7 @@ func TestFileCmd_Structure(t *testing.T) {
 	hasDelete := false
 	hasDomains := false
 	hasHistory := false
+	hasDownloadUrl := false
 
 	for _, c := range commands {
 		switch c.Name() {
@@ -39,6 +40,8 @@ func TestFileCmd_Structure(t *testing.T) {
 			hasDomains = true
 		case "history":
 			hasHistory = true
+		case "download-url":
+			hasDownloadUrl = true
 		}
 	}
 
@@ -53,6 +56,9 @@ func TestFileCmd_Structure(t *testing.T) {
 	}
 	if !hasHistory {
 		t.Error("file command missing 'history' subcommand")
+	}
+	if !hasDownloadUrl {
+		t.Error("file command missing 'download-url' subcommand")
 	}
 }
 
@@ -98,5 +104,23 @@ func TestFileDeleteCmd_Args(t *testing.T) {
 	err = fileDeleteCmd.Args(fileDeleteCmd, []string{"key1", "key2"})
 	if err != nil {
 		t.Errorf("unexpected error with 2 args: %v", err)
+	}
+}
+
+func TestFileDownloadUrlCmd_Args(t *testing.T) {
+	// Test that download-url command requires exactly 1 argument
+	err := fileDownloadUrlCmd.Args(fileDownloadUrlCmd, []string{})
+	if err == nil {
+		t.Error("expected error when no args provided to download-url command")
+	}
+
+	err = fileDownloadUrlCmd.Args(fileDownloadUrlCmd, []string{"123"})
+	if err != nil {
+		t.Errorf("unexpected error with 1 arg: %v", err)
+	}
+
+	err = fileDownloadUrlCmd.Args(fileDownloadUrlCmd, []string{"123", "456"})
+	if err == nil {
+		t.Error("expected error when 2 args provided to download-url command")
 	}
 }
