@@ -46,10 +46,7 @@ func readContent(filePath string, cmd *cobra.Command) (string, error) {
 	if filePath != "" && filePath != "-" {
 		b, err = os.ReadFile(filePath)
 		if err != nil {
-			return "", err
-		}
-		if len(b) == 0 {
-			return "", errors.New("file is empty")
+			return "", fmt.Errorf("failed to read file: %w", err)
 		}
 	} else {
 		// Only check if stdin is a terminal if we are not explicitly asked to read from stdin
@@ -62,11 +59,12 @@ func readContent(filePath string, cmd *cobra.Command) (string, error) {
 
 		b, err = io.ReadAll(cmd.InOrStdin())
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("failed to read from stdin: %w", err)
 		}
-		if len(b) == 0 {
-			return "", errors.New("content is empty")
-		}
+	}
+
+	if len(b) == 0 {
+		return "", errors.New("content is empty")
 	}
 
 	if err := ensureTextContent(b); err != nil {
@@ -75,7 +73,7 @@ func readContent(filePath string, cmd *cobra.Command) (string, error) {
 
 	content := string(b)
 	if len(strings.TrimSpace(content)) == 0 {
-		return "", errors.New("content is empty")
+		return "", errors.New("content is empty after trimming whitespace")
 	}
 	return content, nil
 }

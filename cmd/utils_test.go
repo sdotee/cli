@@ -65,8 +65,8 @@ func TestReadContent_EmptyFile(t *testing.T) {
 	if err == nil {
 		t.Error("expected error for empty file, got nil")
 	}
-	if err.Error() != "file is empty" {
-		t.Errorf("expected 'file is empty' error, got %v", err)
+	if err.Error() != "content is empty" {
+		t.Errorf("expected 'content is empty' error, got %v", err)
 	}
 }
 
@@ -117,7 +117,7 @@ func TestReadContent_EmptyStdin(t *testing.T) {
 	if err == nil {
 		t.Error("expected error for empty stdin, got nil")
 	}
-	if err.Error() != "content is empty" {
-		t.Errorf("expected 'content is empty' error, got %v", err)
+	if err.Error() != "content is empty after trimming whitespace" {
+		t.Errorf("expected 'content is empty after trimming whitespace' error, got %v", err)
 	}
 }
