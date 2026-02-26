@@ -26,7 +26,7 @@ var domainsCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resp, err := apiClient.GetDomains()
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to get domains: %w", err)
 		}
 		if rootOpts.jsonOutput {
 			return printJSON(cmd.OutOrStdout(), resp.Data.Domains)

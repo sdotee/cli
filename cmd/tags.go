@@ -26,7 +26,7 @@ var tagsCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resp, err := apiClient.GetTags()
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to get tags: %w", err)
 		}
 		if rootOpts.jsonOutput {
 			return printJSON(cmd.OutOrStdout(), resp.Data.Tags)

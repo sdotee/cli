@@ -90,7 +90,7 @@ var shorturlCreateCmd = &cobra.Command{
 
 		resp, err := apiClient.CreateShortURL(req)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create short URL: %w", err)
 		}
 		if rootOpts.jsonOutput {
 			return printJSON(cmd.OutOrStdout(), resp.Data)
@@ -115,7 +115,7 @@ var shorturlUpdateCmd = &cobra.Command{
 			Title:     shortUpdateOpts.title,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to update short URL: %w", err)
 		}
 		if rootOpts.jsonOutput {
 			return printJSON(cmd.OutOrStdout(), resp)
@@ -137,7 +137,7 @@ var shorturlDeleteCmd = &cobra.Command{
 			Slug:   args[0],
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to delete short URL: %w", err)
 		}
 		if rootOpts.jsonOutput {
 			return printJSON(cmd.OutOrStdout(), resp)

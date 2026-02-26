@@ -94,7 +94,7 @@ var textCreateCmd = &cobra.Command{
 			TagIDs:     textCreateOpts.tagIDs,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create text entry: %w", err)
 		}
 		if rootOpts.jsonOutput {
 			return printJSON(cmd.OutOrStdout(), resp.Data)
@@ -120,7 +120,7 @@ var textUpdateCmd = &cobra.Command{
 			Title:   textUpdateOpts.title,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to update text entry: %w", err)
 		}
 		if rootOpts.jsonOutput {
 			return printJSON(cmd.OutOrStdout(), resp)
@@ -142,7 +142,7 @@ var textDeleteCmd = &cobra.Command{
 			Slug:   args[0],
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to delete text entry: %w", err)
 		}
 		if rootOpts.jsonOutput {
 			return printJSON(cmd.OutOrStdout(), resp)
@@ -161,7 +161,7 @@ var textDomainsCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resp, err := apiClient.GetTextDomains()
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to get text domains: %w", err)
 		}
 		if rootOpts.jsonOutput {
 			return printJSON(cmd.OutOrStdout(), resp.Data.Domains)

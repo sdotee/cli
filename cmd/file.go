@@ -68,26 +68,10 @@ var fileUploadCmd = &cobra.Command{
 
 		for _, filePath := range filesToUpload {
 			if filePath == "-" {
-				continue // Skip explicit stdin marker in multi-file mode or handle it? simplified to skip/error
+				continue // Skip explicit stdin marker in multi-file mode
 			}
 
-			f, err := os.Open(filePath)
-			if err != nil {
-				return fmt.Errorf("failed to open file %q: %w", filePath, err)
-			}
-			// We defer close inside a loop, which is not ideal for many files, but fine for CLI typical usage.
-			// Better to wrap in func.
-			err = func() error {
-				defer f.Close()
-				filename := filepath.Base(filePath)
-				// If strictly single file and name is provided (already checked above for >1), use it.
-				// But we checked >1. If len==1, we can use name.
-				if len(filesToUpload) == 1 && fileUploadOpts.name != "" {
-					filename = fileUploadOpts.name
-				}
-				return uploadReader(cmd, filename, f)
-			}()
-			if err != nil {
+			if err := uploadSingleFile(cmd, filePath, len(filesToUpload)); err != nil {
 				return err
 			}
 		}
@@ -95,6 +79,23 @@ var fileUploadCmd = &cobra.Command{
 	},
 }
 
+// uploadSingleFile handles the opening and uploading of a single file.
+func uploadSingleFile(cmd *cobra.Command, filePath string, totalFiles int) error {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to open file %q: %w", filePath, err)
+	}
+	defer f.Close()
+
+	filename := filepath.Base(filePath)
+	// If strictly single file and name is provided, use it.
+	if totalFiles == 1 && fileUploadOpts.name != "" {
+		filename = fileUploadOpts.name
+	}
+	return uploadReader(cmd, filename, f)
+}
+
+// uploadReader uploads a file from an io.Reader to the S.EE platform.
 func uploadReader(cmd *cobra.Command, filename string, reader io.Reader) error {
 	resp, err := apiClient.UploadFile(seesdk.UploadFileRequest{
 		Filename:  filename,
@@ -144,7 +145,7 @@ var fileDomainsCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resp, err := apiClient.GetFileDomains()
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to get file domains: %w", err)
 		}
 		if rootOpts.jsonOutput {
 			return printJSON(cmd.OutOrStdout(), resp.Data.Domains)
@@ -163,7 +164,7 @@ var fileHistoryCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resp, err := apiClient.GetFileHistory(fileHistoryOpts.page)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to get file history: %w", err)
 		}
 		if rootOpts.jsonOutput {
 			return printJSON(cmd.OutOrStdout(), resp.Data)
