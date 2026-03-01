@@ -8,6 +8,12 @@ A command-line client for the [S.EE](https://s.ee) content sharing platform, ena
 go install .
 ```
 
+On macOS:
+```bash
+brew tap sdotee/homebrew-tap
+brew install see
+```
+
 On Debian/Ubuntu:
 ```bash
 dpkg -i see-cli_<version>_<arch>.deb
@@ -15,7 +21,7 @@ dpkg -i see-cli_<version>_<arch>.deb
 
 On RHEL/Fedora:
 ```bash
-rpm -i see-cli-<version>-1.<arch>.rpm
+rpm -i see-cli_<version>_linux_<arch>.rpm
 ```
 
 ## Configuration
