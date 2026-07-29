@@ -34,6 +34,20 @@ func printJSON(w io.Writer, v any) error {
 	return enc.Encode(v)
 }
 
+func printMessage(cmd *cobra.Command, response any, message string) error {
+	if rootOpts.jsonOutput {
+		return printJSON(cmd.OutOrStdout(), response)
+	}
+	if message != "" {
+		fmt.Fprintln(cmd.OutOrStdout(), message)
+	}
+	return nil
+}
+
+func addPageFlag(cmd *cobra.Command, page *int) {
+	cmd.Flags().IntVarP(page, "page", "p", 1, "Page number")
+}
+
 // readContent reads content from the specified file path.
 // If filePath is "-", it reads from stdin.
 // It returns an error if the file or stdin is empty.

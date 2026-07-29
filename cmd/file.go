@@ -27,9 +27,11 @@ import (
 
 var (
 	fileUploadOpts struct {
-		file      string
-		name      string
-		isPrivate int
+		file       string
+		name       string
+		domain     string
+		customSlug string
+		isPrivate  bool
 	}
 
 	fileHistoryOpts struct {
@@ -68,7 +70,7 @@ var fileUploadCmd = &cobra.Command{
 
 		for _, filePath := range filesToUpload {
 			if filePath == "-" {
-				continue // Skip explicit stdin marker in multi-file mode
+				return fmt.Errorf("cannot combine stdin with file paths")
 			}
 
 			if err := uploadSingleFile(cmd, filePath, len(filesToUpload)); err != nil {
@@ -97,13 +99,15 @@ func uploadSingleFile(cmd *cobra.Command, filePath string, totalFiles int) error
 
 // uploadReader uploads a file from an io.Reader to the S.EE platform.
 func uploadReader(cmd *cobra.Command, filename string, reader io.Reader) error {
-	resp, err := apiClient.UploadFile(seesdk.UploadFileRequest{
-		Filename:  filename,
-		File:      reader,
-		IsPrivate: fileUploadOpts.isPrivate != 0,
+	resp, err := apiClient.SmartUploadFile(seesdk.UploadFileRequest{
+		Filename:   filename,
+		File:       reader,
+		Domain:     fileUploadOpts.domain,
+		CustomSlug: fileUploadOpts.customSlug,
+		IsPrivate:  fileUploadOpts.isPrivate,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to upload %q: %w", filename, err)
 	}
 
 	if rootOpts.jsonOutput {
@@ -130,7 +134,9 @@ var fileDeleteCmd = &cobra.Command{
 			}
 
 			if rootOpts.jsonOutput {
-				printJSON(cmd.OutOrStdout(), resp)
+				if err := printJSON(cmd.OutOrStdout(), resp); err != nil {
+					return err
+				}
 			} else {
 				fmt.Fprintf(cmd.OutOrStdout(), "File with key arg %q deleted successfully\n", deleteKey)
 			}
@@ -216,9 +222,11 @@ func init() {
 
 	fileUploadCmd.Flags().StringVarP(&fileUploadOpts.file, "file", "f", "", "Path to file to upload (default stdin if not provided or -)")
 	fileUploadCmd.Flags().StringVarP(&fileUploadOpts.name, "name", "n", "", "Filename to use (required for stdin, optional override for file)")
-	fileUploadCmd.Flags().IntVar(&fileUploadOpts.isPrivate, "is-private", 0, "Whether this file should be private (0 = public, 1 = private)")
-	fileUploadCmd.Flags().IntVar(&fileUploadOpts.isPrivate, "private", 0, "Alias for --is-private")
-	fileUploadCmd.Flags().MarkHidden("private")
+	fileUploadCmd.Flags().StringVar(&fileUploadOpts.domain, "domain", "", "Domain for the file URL")
+	fileUploadCmd.Flags().StringVar(&fileUploadOpts.customSlug, "slug", "", "Custom slug for the file URL")
+	fileUploadCmd.Flags().BoolVar(&fileUploadOpts.isPrivate, "private", false, "Upload as a private file")
+	fileUploadCmd.Flags().BoolVar(&fileUploadOpts.isPrivate, "is-private", false, "Alias for --private")
+	_ = fileUploadCmd.Flags().MarkHidden("is-private")
 
-	fileHistoryCmd.Flags().IntVarP(&fileHistoryOpts.page, "page", "p", 1, "Page number (default 1, 30 files per page)")
+	addPageFlag(fileHistoryCmd, &fileHistoryOpts.page)
 }

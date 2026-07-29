@@ -104,6 +104,10 @@ func init() {
 	rootCmd.AddCommand(shorturlCmd)
 	rootCmd.AddCommand(textCmd)
 	rootCmd.AddCommand(fileCmd)
+	rootCmd.AddCommand(bioCmd)
+	rootCmd.AddCommand(qrcodeCmd)
+	rootCmd.AddCommand(usageCmd)
+	rootCmd.AddCommand(tokenCmd)
 	rootCmd.AddCommand(versionCmd)
 }
 

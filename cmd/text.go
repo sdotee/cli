@@ -45,6 +45,8 @@ var (
 	textDeleteOpts struct {
 		domain string
 	}
+
+	textHistoryPage int
 )
 
 var textCmd = &cobra.Command{
@@ -57,6 +59,7 @@ func init() {
 	textCmd.AddCommand(textUpdateCmd)
 	textCmd.AddCommand(textDeleteCmd)
 	textCmd.AddCommand(textDomainsCmd)
+	textCmd.AddCommand(textHistoryCmd)
 
 	textCreateCmd.Flags().StringVar(&textCreateOpts.domain, "domain", "s.ee", "Short domain")
 	textCreateCmd.Flags().StringVar(&textCreateOpts.slug, "slug", "", "Custom slug")
@@ -72,6 +75,7 @@ func init() {
 	textUpdateCmd.Flags().StringVar(&textUpdateOpts.file, "file", "-", "Input file path, or '-' for stdin")
 
 	textDeleteCmd.Flags().StringVar(&textDeleteOpts.domain, "domain", "s.ee", "Short domain")
+	addPageFlag(textHistoryCmd, &textHistoryPage)
 }
 
 var textCreateCmd = &cobra.Command{
@@ -168,6 +172,25 @@ var textDomainsCmd = &cobra.Command{
 		}
 		for _, d := range resp.Data.Domains {
 			fmt.Fprintln(cmd.OutOrStdout(), d)
+		}
+		return nil
+	},
+}
+
+var textHistoryCmd = &cobra.Command{
+	Use:   "history",
+	Short: "List text entry history",
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		resp, err := apiClient.GetTextHistory(textHistoryPage)
+		if err != nil {
+			return fmt.Errorf("failed to get text history: %w", err)
+		}
+		if rootOpts.jsonOutput {
+			return printJSON(cmd.OutOrStdout(), resp.Data)
+		}
+		for _, text := range resp.Data {
+			fmt.Fprintf(cmd.OutOrStdout(), "%s\t%s\t%s\n", text.ShortURL, text.Title, text.ContentPreview)
 		}
 		return nil
 	},

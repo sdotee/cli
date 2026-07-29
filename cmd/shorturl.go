@@ -45,6 +45,13 @@ var (
 	shortDeleteOpts struct {
 		domain string
 	}
+
+	shortStatOpts struct {
+		domain string
+		period string
+	}
+
+	shortHistoryPage int
 )
 
 var shorturlCmd = &cobra.Command{
@@ -56,6 +63,8 @@ func init() {
 	shorturlCmd.AddCommand(shorturlCreateCmd)
 	shorturlCmd.AddCommand(shorturlUpdateCmd)
 	shorturlCmd.AddCommand(shorturlDeleteCmd)
+	shorturlCmd.AddCommand(shorturlStatCmd)
+	shorturlCmd.AddCommand(shorturlHistoryCmd)
 
 	shorturlCreateCmd.Flags().StringVar(&shortCreateOpts.domain, "domain", "s.ee", "Short domain")
 	shorturlCreateCmd.Flags().StringVar(&shortCreateOpts.slug, "slug", "", "Custom slug")
@@ -70,6 +79,10 @@ func init() {
 	shorturlUpdateCmd.Flags().StringVar(&shortUpdateOpts.title, "title", "", "Title")
 
 	shorturlDeleteCmd.Flags().StringVar(&shortDeleteOpts.domain, "domain", "s.ee", "Short domain")
+
+	shorturlStatCmd.Flags().StringVar(&shortStatOpts.domain, "domain", "s.ee", "Short domain")
+	shorturlStatCmd.Flags().StringVar(&shortStatOpts.period, "period", seesdk.VisitStatPeriodTotally, "Statistics period: daily, monthly, or totally")
+	addPageFlag(shorturlHistoryCmd, &shortHistoryPage)
 }
 
 var shorturlCreateCmd = &cobra.Command{
@@ -144,6 +157,50 @@ var shorturlDeleteCmd = &cobra.Command{
 		}
 		if resp.Message != "" {
 			fmt.Fprintln(cmd.OutOrStdout(), resp.Message)
+		}
+		return nil
+	},
+}
+
+var shorturlStatCmd = &cobra.Command{
+	Use:   "stats <slug>",
+	Short: "Get visit statistics for a short URL",
+	Args:  cobra.ExactArgs(1),
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		switch shortStatOpts.period {
+		case seesdk.VisitStatPeriodDaily, seesdk.VisitStatPeriodMonthly, seesdk.VisitStatPeriodTotally:
+			return nil
+		default:
+			return fmt.Errorf("invalid period %q: use daily, monthly, or totally", shortStatOpts.period)
+		}
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
+		resp, err := apiClient.GetLinkVisitStat(shortStatOpts.domain, args[0], shortStatOpts.period)
+		if err != nil {
+			return fmt.Errorf("failed to get short URL statistics: %w", err)
+		}
+		if rootOpts.jsonOutput {
+			return printJSON(cmd.OutOrStdout(), resp.Data)
+		}
+		fmt.Fprintln(cmd.OutOrStdout(), resp.Data.VisitCount)
+		return nil
+	},
+}
+
+var shorturlHistoryCmd = &cobra.Command{
+	Use:   "history",
+	Short: "List short URL history",
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		resp, err := apiClient.GetLinkHistory(shortHistoryPage)
+		if err != nil {
+			return fmt.Errorf("failed to get short URL history: %w", err)
+		}
+		if rootOpts.jsonOutput {
+			return printJSON(cmd.OutOrStdout(), resp.Data)
+		}
+		for _, link := range resp.Data {
+			fmt.Fprintf(cmd.OutOrStdout(), "%s\t%s\t%d\t%s\n", link.ShortURL, link.TargetURL, link.VisitCount, link.Title)
 		}
 		return nil
 	},

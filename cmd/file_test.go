@@ -66,7 +66,7 @@ func TestFileUploadCmd_Flags(t *testing.T) {
 	// Reset flags
 	fileUploadOpts.file = ""
 	fileUploadOpts.name = ""
-	fileUploadOpts.isPrivate = 0
+	fileUploadOpts.isPrivate = false
 
 	f := fileUploadCmd.Flags()
 	if f.Lookup("file") == nil {
@@ -75,8 +75,14 @@ func TestFileUploadCmd_Flags(t *testing.T) {
 	if f.Lookup("name") == nil {
 		t.Error("upload command missing 'name' flag")
 	}
-	if f.Lookup("is-private") == nil {
-		t.Error("upload command missing 'is-private' flag")
+	if f.Lookup("private") == nil {
+		t.Error("upload command missing 'private' flag")
+	}
+	if f.Lookup("domain") == nil {
+		t.Error("upload command missing 'domain' flag")
+	}
+	if f.Lookup("slug") == nil {
+		t.Error("upload command missing 'slug' flag")
 	}
 }
 

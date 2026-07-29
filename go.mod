@@ -3,8 +3,8 @@ module s.ee/cli
 go 1.26
 
 require (
-	github.com/gabriel-vasile/mimetype v1.4.12
-	github.com/sdotee/sdk.go v1.2.0
+	github.com/gabriel-vasile/mimetype v1.4.15
+	github.com/sdotee/sdk.go v1.3.0
 	github.com/spf13/cobra v1.10.2
 )
 
