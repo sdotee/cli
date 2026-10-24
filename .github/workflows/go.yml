@@ -34,7 +34,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  GO_VERSION: "1.26.x"
+  GO_VERSION: "1.27.x"
 
 jobs:
   quality:
@@ -78,9 +78,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - go-version: "1.26.x"
+          - go-version: "1.27.x"
             experimental: false
-          - go-version: ">=1.27.0-rc.1 <1.28.0"
+          - go-version: ">=1.28.0-rc.1 <1.29.0"
             experimental: true
     continue-on-error: ${{ matrix.experimental }}
     steps:
@@ -97,7 +97,7 @@ jobs:
         run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
 
       - name: Upload coverage
-        if: matrix.go-version == '1.26.x'
+        if: matrix.go-version == '1.27.x'
         uses: actions/upload-artifact@v6
         with:
           name: coverage
