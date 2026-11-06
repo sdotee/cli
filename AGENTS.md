@@ -42,5 +42,5 @@ Run the narrowest relevant test first, then `make test` for changes that affect 
 
 - Keep [README.md](README.md) synchronized when commands, flags, configuration, or user-visible output change.
 - Keep this file and [CLAUDE.md](CLAUDE.md) aligned; `CLAUDE.md` imports this file as the canonical agent guidance.
-- CI builds with Go 1.26 on pushes and pull requests to `main`.
+- CI builds with Go 1.27 on pushes and pull requests to `main`.
 - Tags trigger GoReleaser. `make release` creates a local snapshot, and `make darwin_universal` builds a universal macOS binary.
