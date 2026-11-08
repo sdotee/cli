@@ -14,7 +14,12 @@
 
 package main
 
-import "github.com/sdotee/cli/cmd"
+import (
+	"runtime/debug"
+	"strings"
+
+	"github.com/sdotee/cli/cmd"
+)
 
 var (
 	BuildVersion = "dev"
@@ -22,5 +27,25 @@ var (
 )
 
 func main() {
+	if BuildVersion == "dev" {
+		if info, ok := debug.ReadBuildInfo(); ok {
+			BuildVersion, BuildTime = versionFromBuildInfo(info, BuildVersion, BuildTime)
+		}
+	}
 	cmd.Execute(BuildVersion, BuildTime)
+}
+
+// versionFromBuildInfo fills in version and build time from Go build info
+// for builds without ldflags, such as go install. The "v" prefix is dropped
+// to match the versions injected by make and GoReleaser.
+func versionFromBuildInfo(info *debug.BuildInfo, version, buildTime string) (string, string) {
+	if v := info.Main.Version; v != "" && v != "(devel)" {
+		version = strings.TrimPrefix(v, "v")
+	}
+	for _, s := range info.Settings {
+		if s.Key == "vcs.time" && s.Value != "" {
+			buildTime = s.Value
+		}
+	}
+	return version, buildTime
 }
