@@ -1,6 +1,6 @@
 .PHONY: build clean test darwin_universal release
 
-VERSION=1.4.1
+VERSION=1.4.2
 BIN=see
 DOCKER_CMD=docker
 
