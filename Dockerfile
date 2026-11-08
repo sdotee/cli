@@ -11,7 +11,7 @@ WORKDIR ${BUILD_DIR}
 RUN make build && cp ./see /bin/see
 
 # Stage2
-FROM debian:stable
+FROM debian:stable-slim
 
 ENV TZ "UTC"
 RUN apt -y update \
