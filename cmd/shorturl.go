@@ -55,8 +55,9 @@ var (
 )
 
 var shorturlCmd = &cobra.Command{
-	Use:   "shorturl",
-	Short: "Manage short URLs",
+	Use:     "shorturl",
+	Aliases: []string{"url"},
+	Short:   "Manage short URLs",
 }
 
 func init() {
