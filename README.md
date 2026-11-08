@@ -48,6 +48,14 @@ sudo apk add --allow-untrusted see-cli_<version>_linux_<arch>.apk  # Alpine
 sudo pacman -U see-cli_<version>_linux_<arch>.pkg.tar.zst          # Arch Linux
 ```
 
+### Android (Termux)
+
+Releases from v1.4.1 include a Termux package for `aarch64`:
+
+```bash
+dpkg -i see-cli_<version>_android_arm64.termux.deb
+```
+
 ### Arch Linux (AUR)
 
 ```bash
@@ -57,7 +65,7 @@ yay -S see-cli-bin   # pre-built binary
 
 ### Pre-built binaries
 
-Releases also include `see_<OS>_<arch>.tar.gz` for macOS, Linux and FreeBSD, and `see_Windows_<arch>.zip` for Windows, on `x86_64` and `arm64`.
+Releases also include `see_<OS>_<arch>.tar.gz` for macOS, Linux and FreeBSD, and `see_Windows_<arch>.zip` for Windows, on `x86_64` and `arm64`. From v1.4.1 there is also `see_Android_arm64.tar.gz`.
 
 ### From source
 
@@ -69,14 +77,28 @@ cd cli
 make build   # builds ./see
 ```
 
+Or with `go install` (v1.4.1 and later). Go names the binary after the module path, so it installs as `cli`; rename it to `see`:
+
+```bash
+go install github.com/sdotee/cli@latest
+mv "$(go env GOPATH)/bin/cli" "$(go env GOPATH)/bin/see"
+```
+
 ## Configuration
 
 | Flag         | Environment Variable | Description           |
 | ------------ | -------------------- | --------------------- |
 | `--api-key`  | `SEE_API_KEY`        | API key (Required)    |
 | `--base-url` | `SEE_BASE_URL`       | API base URL          |
-| `--timeout`  | `SEE_TIMEOUT`        | Request timeout (flag: duration such as `30s`; env: seconds) |
+| `--timeout`  | `SEE_TIMEOUT`        | Request timeout       |
 | `--json`     |                      | Output in JSON format |
+
+The two timeout settings use different formats. `--timeout` takes a Go duration such as `30s` or `2m`. `SEE_TIMEOUT` takes a whole number of seconds such as `30`; a value that isn't a whole number is ignored and the default timeout is used.
+
+```bash
+see --timeout 30s domains
+SEE_TIMEOUT=30 see domains
+```
 
 Run `see help <command>` for the complete flag reference. Add `--json` to any command to receive machine-readable output.
 
@@ -93,7 +115,7 @@ see tags
 
 ### Short URLs
 
-Manage short links. `--domain` defaults to `s.ee`; `--expire-at` takes a Unix timestamp in seconds.
+Manage short links. `see url` is an alias for `see shorturl`. `--domain` defaults to `s.ee`; `--expire-at` takes a Unix timestamp in seconds.
 
 **Create**
 
@@ -127,7 +149,7 @@ The statistics period can be `daily`, `monthly`, or `totally`.
 
 ### Text
 
-Manage text snippets. Reads from stdin by default or `--file`. `--type` can be `plain_text`, `source_code` or `markdown`.
+Manage text snippets. Reads from stdin by default or `--file`. `--type` can be `plain_text`, `source_code` or `markdown`. Every text needs a title: `create` uses `Untitled` when `--title` is omitted, and `update` requires `--title`.
 
 **Create**
 
@@ -141,7 +163,7 @@ echo "hello" | see text create [flags]
 **Update**
 
 ```bash
-see text update <slug> --file <path> [--domain s.ee] [--title <title>]
+see text update <slug> --title <title> --file <path> [--domain s.ee]
 # or pipe the new content via stdin
 ```
 
