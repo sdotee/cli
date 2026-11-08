@@ -130,6 +130,9 @@ jobs:
       matrix:
         goos: [linux, windows, darwin, freebsd]
         goarch: [amd64, arm64]
+        include:
+          - goos: android
+            goarch: arm64
     steps:
       - name: Checkout
         uses: actions/checkout@v7

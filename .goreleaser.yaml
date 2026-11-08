@@ -14,9 +14,14 @@ builds:
       - windows
       - darwin
       - freebsd
+      - android
     goarch:
       - amd64
       - arm64
+    ignore:
+      # Android is built for Termux only, which targets arm64.
+      - goos: android
+        goarch: amd64
     ldflags:
       - -s -w
       - -X main.BuildVersion={{.Version}}
