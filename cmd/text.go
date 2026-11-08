@@ -16,10 +16,15 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	seesdk "github.com/sdotee/sdk.go"
 	"github.com/spf13/cobra"
 )
+
+// defaultTextTitle is used when text create is called without a title,
+// because the API requires one.
+const defaultTextTitle = "Untitled"
 
 var (
 	// textCreateOpts holds options for creating a text entry
@@ -63,15 +68,15 @@ func init() {
 
 	textCreateCmd.Flags().StringVar(&textCreateOpts.domain, "domain", "s.ee", "Short domain")
 	textCreateCmd.Flags().StringVar(&textCreateOpts.slug, "slug", "", "Custom slug")
-	textCreateCmd.Flags().StringVar(&textCreateOpts.title, "title", "", "Title")
-	textCreateCmd.Flags().StringVar(&textCreateOpts.textType, "type", "", "Syntax highlighting type")
+	textCreateCmd.Flags().StringVar(&textCreateOpts.title, "title", "", "Title (defaults to \"Untitled\")")
+	textCreateCmd.Flags().StringVar(&textCreateOpts.textType, "type", "", "Text type: plain_text, source_code, or markdown")
 	textCreateCmd.Flags().StringVar(&textCreateOpts.password, "password", "", "Password")
 	textCreateCmd.Flags().Int64Var(&textCreateOpts.expireAt, "expire-at", 0, "Expire at (unix seconds)")
 	textCreateCmd.Flags().Int64SliceVar(&textCreateOpts.tagIDs, "tag-ids", nil, "Tag IDs")
 	textCreateCmd.Flags().StringVar(&textCreateOpts.file, "file", "-", "Input file path, or '-' for stdin")
 
 	textUpdateCmd.Flags().StringVar(&textUpdateOpts.domain, "domain", "s.ee", "Short domain")
-	textUpdateCmd.Flags().StringVar(&textUpdateOpts.title, "title", "", "Title")
+	textUpdateCmd.Flags().StringVar(&textUpdateOpts.title, "title", "", "Title (required)")
 	textUpdateCmd.Flags().StringVar(&textUpdateOpts.file, "file", "-", "Input file path, or '-' for stdin")
 
 	textDeleteCmd.Flags().StringVar(&textDeleteOpts.domain, "domain", "s.ee", "Short domain")
@@ -91,7 +96,7 @@ var textCreateCmd = &cobra.Command{
 			Content:    content,
 			Domain:     textCreateOpts.domain,
 			CustomSlug: textCreateOpts.slug,
-			Title:      textCreateOpts.title,
+			Title:      textTitleOrDefault(textCreateOpts.title),
 			TextType:   textCreateOpts.textType,
 			Password:   textCreateOpts.password,
 			ExpireAt:   textCreateOpts.expireAt,
@@ -113,6 +118,9 @@ var textUpdateCmd = &cobra.Command{
 	Short: "Update a text entry (reads from --file or stdin)",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if strings.TrimSpace(textUpdateOpts.title) == "" {
+			return fmt.Errorf("--title is required")
+		}
 		content, err := readContent(textUpdateOpts.file, cmd)
 		if err != nil {
 			return err
@@ -194,4 +202,12 @@ var textHistoryCmd = &cobra.Command{
 		}
 		return nil
 	},
+}
+
+// textTitleOrDefault returns title, or defaultTextTitle when title is blank.
+func textTitleOrDefault(title string) string {
+	if strings.TrimSpace(title) == "" {
+		return defaultTextTitle
+	}
+	return title
 }
