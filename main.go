@@ -14,7 +14,7 @@
 
 package main
 
-import "s.ee/cli/cmd"
+import "github.com/sdotee/cli/cmd"
 
 var (
 	BuildVersion = "dev"

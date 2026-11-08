@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-`see-cli` is the Go command-line client for the S.EE content sharing platform. It manages short URLs, text snippets, files, bio pages, dynamic QR codes, account usage, and API tokens. The module path is `s.ee/cli`; the CLI uses Cobra and `github.com/sdotee/sdk.go` for API access.
+`see-cli` is the Go command-line client for the S.EE content sharing platform. It manages short URLs, text snippets, files, bio pages, dynamic QR codes, account usage, and API tokens. The module path is `github.com/sdotee/cli`; the CLI uses Cobra and `github.com/sdotee/sdk.go` for API access.
 
 Read [README.md](README.md) for user-facing command and configuration documentation.
 

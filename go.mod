@@ -1,4 +1,4 @@
-module s.ee/cli
+module github.com/sdotee/cli
 
 go 1.26
 

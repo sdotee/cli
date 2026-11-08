@@ -1,7 +1,7 @@
 FROM golang:1.27 AS builder
 LABEL maintainer="S.EE Development Team <dev@s.ee>"
 
-ENV PACKAGE s.ee/cli
+ENV PACKAGE github.com/sdotee/cli
 ENV BUILD_DIR ${GOPATH}/src/${PACKAGE}
 # ENV GOPROXY https://goproxy.cn,direct
 
